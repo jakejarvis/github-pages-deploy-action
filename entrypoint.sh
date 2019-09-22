@@ -53,10 +53,6 @@ REPOSITORY_PATH="https://${PAGES_TOKEN}@github.com/${GITHUB_ACTOR}/${PAGES_TARGE
 # Checks out the base branch to begin the deploy process.
 git checkout "${PAGES_SOURCE_BRANCH:-master}"
 
-if [ "$PAGES_CNAME" ]; then
-  echo "Generating a CNAME file in in the $PAGES_SOURCE_FOLDER directory..."
-  echo "$PAGES_CNAME" > "$FOLDER"/CNAME
-fi
 
 # --- TODO: Only necessary if the target repo isn't the current one ---
 
@@ -71,14 +67,18 @@ git init
 git remote add target "$REPOSITORY_PATH"
 git checkout -B "$PAGES_TARGET_BRANCH"
 
-git add .
-
 ## --- END TODO ---
 
+if [ "$PAGES_CNAME" ]; then
+  echo "Generating a CNAME file..."
+  echo "$PAGES_CNAME" > CNAME
+fi
+
+git add .
 
 echo "Deploying to target branch..."
 
-git commit -m "GitHub Pages deploy from branch '${PAGES_SOURCE_BRANCH}' of ${GITHUB_REPOSITORY}"
+git commit -m "GitHub Pages deploy from $GITHUB_REPOSITORY@$GITHUB_SHA" --quiet
 git push target "$PAGES_TARGET_BRANCH" --force
 
 echo "Deployment succesful!"
