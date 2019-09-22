@@ -44,7 +44,6 @@ fi
 cd "$GITHUB_WORKSPACE"
 
 # Configures Git.
-git init
 git config --global user.email "${PAGES_COMMIT_EMAIL}"
 git config --global user.name "${PAGES_COMMIT_NAME}"
 
@@ -59,11 +58,27 @@ if [ "$PAGES_CNAME" ]; then
   echo "$PAGES_CNAME" > "$FOLDER"/CNAME
 fi
 
-# Commits the data to Github.
-echo "Deploying to GitHub..."
-git add -f "$PAGES_SOURCE_FOLDER"
+# --- TODO: Only necessary if the target repo isn't the current one ---
 
-git commit -m "Pages deploy from ${GITHUB_ACTOR}/${GITHUB_REPOSITORY}:${PAGES_SOURCE_BRANCH}" --quiet
-git push "$REPOSITORY_PATH" "$PAGES_TARGET_BRANCH" --force
+mkdir gh-pages-target
+
+# Copy source directory into target repo
+cp -r "$PAGES_SOURCE_FOLDER"/* gh-pages-target
+
+cd gh-pages-target
+
+git init
+git remote add target "$REPOSITORY_PATH"
+git checkout -B "$PAGES_TARGET_BRANCH"
+
+git add .
+
+## --- END TODO ---
+
+
+echo "Deploying to target branch..."
+
+git commit -m "GitHub Pages deploy from branch '${PAGES_SOURCE_BRANCH}' of ${GITHUB_REPOSITORY}"
+git push target "$PAGES_TARGET_BRANCH" --force
 
 echo "Deployment succesful!"
